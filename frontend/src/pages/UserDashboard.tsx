@@ -1,0 +1,162 @@
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
+import { getProfile, logout } from '@/redux/slices/authSlice';
+import { fetchUserOrders } from '@/redux/slices/orderSlice';
+import { fetchWishlist } from '@/redux/slices/wishlistSlice';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Heart, ShoppingBag, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+export default function UserDashboard() {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { orders } = useAppSelector((state) => state.cart);
+  const { items: wishlistItems } = useAppSelector((state) => state.wishlist);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    dispatch(fetchUserOrders() as any);
+    dispatch(fetchWishlist() as any);
+  }, [dispatch, navigate, isAuthenticated]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Navbar />
+
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Welcome, {user.firstName} {user.lastName}!</h1>
+            <p className="text-gray-600 mt-2">{user.email}</p>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-600 text-sm">Total Orders</p>
+                  <p className="text-3xl font-bold mt-2">{orders.length}</p>
+                </div>
+                <ShoppingBag className="w-12 h-12 text-blue-500 opacity-50" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-600 text-sm">Wishlist Items</p>
+                  <p className="text-3xl font-bold mt-2">{wishlistItems.length}</p>
+                </div>
+                <Heart className="w-12 h-12 text-red-500 opacity-50" />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-600 text-sm">Account Status</p>
+                  <p className="text-3xl font-bold mt-2 text-green-600">Active</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Recent Orders */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Recent Orders</h2>
+            {orders.length > 0 ? (
+              <div className="space-y-4">
+                {orders.slice(0, 5).map((order: any) => (
+                  <Card key={order.id} className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold text-lg">Order #{order.id.slice(0, 8)}</p>
+                        <p className="text-gray-600 text-sm">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg">${order.total}</p>
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                          order.status === 'DELIVERED'
+                            ? 'bg-green-100 text-green-800'
+                            : order.status === 'CANCELLED'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-6">
+                <p className="text-gray-600 text-center">No orders yet. Start shopping!</p>
+                <Button className="w-full mt-4" onClick={() => navigate('/products')}>
+                  Browse Products
+                </Button>
+              </Card>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/products')}
+              className="flex-1"
+            >
+              Continue Shopping
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/wishlist')}
+              className="flex-1"
+            >
+              View Wishlist
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleLogout}
+              className="flex-1"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
