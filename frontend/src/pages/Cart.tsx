@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -7,14 +7,14 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Cart = () => {
+  const navigate = useNavigate();
   const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
 
   const shippingCost = items.length > 0 ? 4.99 : 0;
   const finalTotal = totalPrice + shippingCost;
 
-  const handlePlaceOrder = () => {
-    toast.success('Order placed successfully! (Demo - Cash on Delivery)');
-    clearCart();
+  const handleProceedToCheckout = () => {
+    navigate('/checkout');
   };
 
   return (
@@ -151,9 +151,10 @@ const Cart = () => {
                   <Button
                     className="w-full bg-cta text-cta-foreground hover:bg-cta/90"
                     size="lg"
-                    onClick={handlePlaceOrder}
+                    onClick={handleProceedToCheckout}
                   >
-                    Place Order
+                    Proceed to Checkout
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
 
                   <Link to="/products">

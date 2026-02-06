@@ -19,7 +19,7 @@ export const getUserCart = asyncHandler(async (req, res) => {
 // Create Order (Place Order)
 export const createOrder = asyncHandler(async (req, res) => {
   const userId = req.user.userId;
-  const { items, totalPrice, shippingAddress, paymentMethod } = req.body;
+  const { items, totalAmount, totalPrice, shippingAddress, paymentMethod } = req.body;
 
   if (!items || items.length === 0) {
     throw new AppError('No items in order', 400);
@@ -29,12 +29,20 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new AppError('Shipping address and payment method are required', 400);
   }
 
+  // Use totalAmount from frontend (includes shipping and tax)
+  const finalTotal = totalAmount || totalPrice;
+
+  // Convert shippingAddress object to JSON string
+  const shippingAddressString = typeof shippingAddress === 'string'
+    ? shippingAddress
+    : JSON.stringify(shippingAddress);
+
   // Create order with items
   const order = await prisma.order.create({
     data: {
       userId,
-      totalPrice: parseFloat(totalPrice),
-      shippingAddress,
+      totalPrice: parseFloat(finalTotal),
+      shippingAddress: shippingAddressString,
       paymentMethod,
       items: {
         create: items.map((item) => ({
