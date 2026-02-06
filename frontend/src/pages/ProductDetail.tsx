@@ -69,6 +69,19 @@ const ProductDetail = () => {
         toast.success(`Added ${quantity} ${quantity > 1 ? 'items' : 'item'} to cart!`);
     };
 
+    const handleBuyNow = () => {
+        if (product.stock === 0) {
+            toast.error('Product is out of stock');
+            return;
+        }
+        // Add to cart
+        for (let i = 0; i < quantity; i++) {
+            addToCart(product);
+        }
+        // Navigate to cart for checkout
+        navigate('/cart');
+    };
+
     const handleWishlist = () => {
         setIsWishlisted(!isWishlisted);
         toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
@@ -131,8 +144,8 @@ const ProductDetail = () => {
                                             key={index}
                                             onClick={() => setCurrentImageIndex(index)}
                                             className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${index === currentImageIndex
-                                                    ? 'border-blue-500 ring-2 ring-blue-500/50 scale-105'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 opacity-70 hover:opacity-100'
+                                                ? 'border-blue-500 ring-2 ring-blue-500/50 scale-105'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 opacity-70 hover:opacity-100'
                                                 }`}
                                         >
                                             <img
@@ -167,8 +180,8 @@ const ProductDetail = () => {
                                         <Star
                                             key={i}
                                             className={`h-5 w-5 ${i < Math.floor(product.rating || 0)
-                                                    ? 'fill-amber-400 text-amber-400'
-                                                    : 'text-slate-300 dark:text-slate-600'
+                                                ? 'fill-amber-400 text-amber-400'
+                                                : 'text-slate-300 dark:text-slate-600'
                                                 }`}
                                         />
                                     ))}
@@ -243,33 +256,47 @@ const ProductDetail = () => {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex gap-4">
+                            <div className="space-y-4">
+                                {/* Buy Now Button - Primary CTA */}
                                 <Button
-                                    onClick={handleAddToCart}
+                                    onClick={handleBuyNow}
                                     disabled={product.stock === 0}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-14 text-lg font-semibold"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white h-14 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
                                     size="lg"
                                 >
-                                    <ShoppingCart className="h-5 w-5 mr-2" />
-                                    {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                    {product.stock === 0 ? 'Out of Stock' : 'Buy Now'}
                                 </Button>
 
-                                <Button
-                                    onClick={handleWishlist}
-                                    variant="outline"
-                                    size="lg"
-                                    className={`h-14 w-14 ${isWishlisted
+                                {/* Secondary Actions Row */}
+                                <div className="flex gap-4">
+                                    <Button
+                                        onClick={handleAddToCart}
+                                        disabled={product.stock === 0}
+                                        variant="outline"
+                                        className="flex-1 h-12 text-base font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                        size="lg"
+                                    >
+                                        <ShoppingCart className="h-5 w-5 mr-2" />
+                                        Add to Cart
+                                    </Button>
+
+                                    <Button
+                                        onClick={handleWishlist}
+                                        variant="outline"
+                                        size="lg"
+                                        className={`h-12 w-12 border-2 ${isWishlisted
                                             ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700'
                                             : ''
-                                        }`}
-                                >
-                                    <Heart
-                                        className={`h-6 w-6 ${isWishlisted
+                                            }`}
+                                    >
+                                        <Heart
+                                            className={`h-6 w-6 ${isWishlisted
                                                 ? 'fill-red-500 text-red-500'
                                                 : 'text-gray-600 dark:text-gray-400'
-                                            }`}
-                                    />
-                                </Button>
+                                                }`}
+                                        />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
