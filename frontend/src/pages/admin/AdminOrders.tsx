@@ -56,12 +56,12 @@ export default function AdminOrders() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'SHIPPED': return 'bg-blue-100 text-blue-800';
-      case 'DELIVERED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      case 'RETURNED': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300';
+      case 'SHIPPED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+      case 'DELIVERED': return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+      case 'CANCELLED': return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+      case 'RETURNED': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
@@ -125,9 +125,9 @@ export default function AdminOrders() {
         </div>
 
         {/* Filter Section */}
-        <Card className="p-4 bg-gradient-to-r from-slate-50 to-slate-100">
+        <Card className="p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 dark:border-slate-700">
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Status:</span>
             <Select value={filterStatus || "ALL"} onValueChange={(value) => setFilterStatus(value === "ALL" ? "" : value)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="All Orders" />
@@ -141,7 +141,7 @@ export default function AdminOrders() {
                 <SelectItem value="RETURNED">Returned</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-sm text-gray-600">({filteredOrders.length} orders)</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">({filteredOrders.length} orders)</span>
           </div>
         </Card>
 
@@ -150,29 +150,29 @@ export default function AdminOrders() {
           <div className="text-center py-12">
             <div className="inline-block">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <p className="mt-4 text-gray-600">Loading orders...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading orders...</p>
             </div>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <Card className="p-12 text-center">
-            <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Orders Found</h3>
-            <p className="text-gray-500">There are no orders to display</p>
+          <Card className="p-12 text-center dark:border-slate-700">
+            <ShoppingBag className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No Orders Found</h3>
+            <p className="text-gray-500 dark:text-gray-500">There are no orders to display</p>
           </Card>
         ) : (
           <div className="space-y-4">
             {filteredOrders.map((order: any) => (
-              <Card key={order.id} className="p-6 hover:shadow-lg transition-shadow">
+              <Card key={order.id} className="p-6 hover:shadow-lg transition-shadow dark:border-slate-700">
                 <div className="flex items-start justify-between mb-4">
                   {/* Left Section - Order Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                         {getStatusIcon(order.status)}
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg">Order #{order.id.slice(0, 8).toUpperCase()}</h3>
-                        <p className="text-xs text-gray-500">ID: {order.id}</p>
+                        <h3 className="font-bold text-lg text-foreground">Order #{order.id.slice(0, 8).toUpperCase()}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">ID: {order.id}</p>
                       </div>
                     </div>
                   </div>
@@ -186,36 +186,36 @@ export default function AdminOrders() {
                 </div>
 
                 {/* Order Details Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 dark:border dark:border-slate-700 rounded-lg">
                   {/* Customer Info */}
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1">CUSTOMER</p>
-                    <p className="font-semibold text-sm">{order.user?.firstName} {order.user?.lastName}</p>
-                    <p className="text-xs text-gray-600">{order.user?.email}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1">CUSTOMER</p>
+                    <p className="font-semibold text-sm text-foreground">{order.user?.firstName} {order.user?.lastName}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{order.user?.email}</p>
                   </div>
 
                   {/* Date */}
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       DATE
                     </p>
-                    <p className="font-semibold text-sm">{new Date(order.createdAt).toLocaleDateString()}</p>
-                    <p className="text-xs text-gray-600">{new Date(order.createdAt).toLocaleTimeString()}</p>
+                    <p className="font-semibold text-sm text-foreground">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(order.createdAt).toLocaleTimeString()}</p>
                   </div>
 
                   {/* Items Count */}
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
                       <Package className="w-3 h-3" />
                       ITEMS
                     </p>
-                    <p className="font-semibold text-sm">{order.items?.length || 0} product(s)</p>
+                    <p className="font-semibold text-sm text-foreground">{order.items?.length || 0} product(s)</p>
                   </div>
 
                   {/* Total Amount */}
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
                       <CreditCard className="w-3 h-3" />
                       TOTAL
                     </p>
@@ -226,24 +226,24 @@ export default function AdminOrders() {
                 {/* Additional Details */}
                 <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       SHIPPING ADDRESS
                     </p>
-                    <p className="text-gray-700 line-clamp-2">{order.shippingAddress}</p>
+                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">{order.shippingAddress}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
                       <CreditCard className="w-3 h-3" />
                       PAYMENT METHOD
                     </p>
-                    <p className="text-gray-700 font-medium">{order.paymentMethod}</p>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">{order.paymentMethod}</p>
                   </div>
                 </div>
 
                 {/* Status Update */}
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <p className="text-sm text-gray-600">Update Status:</p>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Update Status:</p>
                   <Select
                     value={order.status}
                     onValueChange={(value) => updateOrderStatus(order.id, value)}

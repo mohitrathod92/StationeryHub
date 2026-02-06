@@ -17,7 +17,7 @@ const FeaturedProducts = () => {
   const featuredProducts = Array.isArray(products) ? products.slice(0, 4) : [];
 
   if (loading) {
-    return <div className="py-16 text-center">Loading products...</div>;
+    return <div className="py-16 text-center text-muted-foreground">Loading products...</div>;
   }
 
   return (

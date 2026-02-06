@@ -18,7 +18,7 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 100]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   
   const selectedCategory = searchParams.get('category') || '';
 
@@ -26,16 +26,30 @@ const Products = () => {
     dispatch(fetchProducts() as any);
   }, [dispatch]);
 
+  // Sync search from URL when navigating (e.g. from Navbar search)
+  useEffect(() => {
+    setSearchQuery(searchParams.get('search') || '');
+  }, [searchParams]);
+
   const filteredProducts = useMemo(() => {
     return products.filter((product: any) => {
       const matchesCategory = !selectedCategory || product.category === selectedCategory;
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      const matchesSearch = 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = !searchLower ||
+        (product.name || '').toLowerCase().includes(searchLower) ||
+        (product.description || '').toLowerCase().includes(searchLower);
       return matchesCategory && matchesPrice && matchesSearch && product.isActive;
     });
   }, [selectedCategory, priceRange, searchQuery, products]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    const next = new URLSearchParams(searchParams);
+    if (value.trim()) next.set('search', value.trim());
+    else next.delete('search');
+    setSearchParams(next, { replace: true });
+  };
 
   const handleCategoryChange = (categoryId: string) => {
     if (categoryId) {
@@ -55,7 +69,7 @@ const Products = () => {
   const maxPrice = Math.max(...(products.map((p: any) => p.price) || [50]), 100);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <Navbar />
       <main className="flex-1 py-12">
         <div className="container-custom">
@@ -75,7 +89,7 @@ const Products = () => {
                 type="text"
                 placeholder="Search products by name or description..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-12 h-12 text-base"
               />
             </div>
@@ -106,7 +120,7 @@ const Products = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters Sidebar */}
             <aside className={`lg:w-72 shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-              <div className="bg-white rounded-xl p-6 border border-border sticky top-24 shadow-sm">
+              <div className="bg-white dark:bg-card dark:border-slate-700 rounded-xl p-6 border border-border sticky top-24 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-bold text-lg text-foreground flex items-center gap-2">
                     <Filter className="h-5 w-5" />

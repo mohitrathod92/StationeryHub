@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, LayoutDashboard, BookOpen, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const { totalItems } = useCart();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
@@ -21,6 +22,24 @@ const Navbar = () => {
   const handleLogout = () => {
     dispatch(logout());
   };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsMenuOpen(false);
+    } else {
+      navigate('/products');
+    }
+  };
+
+  // Sync Navbar search with URL when on products page
+  useEffect(() => {
+    if (location.pathname === '/products') {
+      const urlSearch = new URLSearchParams(location.search).get('search') || '';
+      setSearchQuery(urlSearch);
+    }
+  }, [location.pathname, location.search]);
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -60,7 +79,7 @@ const Navbar = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden lg:flex items-center flex-1 max-w-md">
+          <form onSubmit={handleSearchSubmit} className="hidden lg:flex items-center flex-1 max-w-md">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -71,7 +90,7 @@ const Navbar = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-          </div>
+          </form>
 
           {/* Actions */}
           <div className="flex items-center gap-2 shrink-0">
@@ -130,7 +149,7 @@ const Navbar = () => {
           <div className="md:hidden py-4 border-t border-border animate-fade-up">
             <div className="flex flex-col gap-4">
               {/* Mobile Search */}
-              <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
@@ -139,7 +158,7 @@ const Navbar = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              </div>
+              </form>
 
               {/* Mobile Nav Links */}
               {navLinks.map((link) => (

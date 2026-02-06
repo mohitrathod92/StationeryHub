@@ -18,17 +18,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptor for error handling
+// Response interceptor - do NOT auto-logout on 401.
+// User signs out only when they explicitly click Sign Out.
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;

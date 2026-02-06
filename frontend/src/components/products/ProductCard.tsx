@@ -34,9 +34,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     : null;
 
   return (
-    <div className="group bg-card rounded-xl overflow-hidden border border-border hover:border-primary hover:shadow-xl transition-all duration-300">
+    <div className="group bg-card rounded-xl overflow-hidden border border-border dark:border-slate-700 hover:border-primary hover:shadow-xl transition-all duration-300">
       {/* Product Image Container */}
-      <div className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+      <div className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 overflow-hidden">
         {product.images && product.images.length > 0 && !imageError ? (
           <img
             src={product.images[0]}
@@ -46,7 +46,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-20 h-20 text-slate-300" />
+            <Package className="w-20 h-20 text-slate-300 dark:text-slate-500" />
           </div>
         )}
         
@@ -79,7 +79,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             size="icon"
             variant="secondary"
             onClick={handleWishlist}
-            className={isWishlisted ? 'bg-red-100 text-red-600' : 'bg-white/90 hover:bg-white'}
+            className={isWishlisted ? 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400' : 'bg-white/90 hover:bg-white dark:bg-slate-800/90 dark:hover:bg-slate-700'}
           >
             <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
           </Button>
@@ -107,7 +107,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 className={`h-3.5 w-3.5 ${
                   i < Math.floor(product.rating || 0)
                     ? 'fill-amber-400 text-amber-400'
-                    : 'text-slate-300'
+                    : 'text-slate-300 dark:text-slate-600'
                 }`}
               />
             ))}

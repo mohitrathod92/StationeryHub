@@ -122,7 +122,7 @@ export default function AdminProducts() {
       
       setIsDialogOpen(false);
       resetForm();
-      dispatch(fetchProducts() as any);
+      dispatch(fetchAdminProducts() as any);
     } catch (error: any) {
       toast.error(error.message || `Failed to ${editingProduct ? 'update' : 'create'} product`);
     }
@@ -345,7 +345,7 @@ export default function AdminProducts() {
             <p className="mt-4 text-muted-foreground">Loading products...</p>
           </div>
         ) : productList.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="p-12 text-center dark:border-slate-700">
             <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-xl font-semibold mb-2">No products yet</h3>
             <p className="text-muted-foreground mb-4">Get started by adding your first product</p>
@@ -362,7 +362,7 @@ export default function AdminProducts() {
                 : null;
               
               return (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow dark:border-slate-700">
                   {/* Product Image */}
                   <div className="relative h-48 bg-muted overflow-hidden">
                     {product.images?.[0] ? (
@@ -376,10 +376,10 @@ export default function AdminProducts() {
                       />
                     ) : null}
                     <div 
-                      className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center" 
+                      className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center" 
                       style={{ display: product.images?.[0] ? 'none' : 'flex' }}
                     >
-                      <ImageIcon className="w-12 h-12 text-slate-400" />
+                      <ImageIcon className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     </div>
                     
                     {/* Stock Badge */}
@@ -410,7 +410,7 @@ export default function AdminProducts() {
                       )}
                     </div>
                     
-                    <h3 className="font-bold text-lg mb-1 line-clamp-2">{product.name}</h3>
+                    <h3 className="font-bold text-lg mb-1 line-clamp-2 text-foreground">{product.name}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
                     
                     {/* Price */}
