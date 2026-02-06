@@ -10,7 +10,7 @@ import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 
-dotenv.config({ path: '.env.local' });
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,7 +50,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  
+
   // Handle Prisma errors
   if (err.code === 'P2002') {
     return res.status(400).json({
