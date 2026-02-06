@@ -15,10 +15,10 @@ const StatSkeleton = () => (
   <Card className="p-6">
     <div className="flex items-center justify-between">
       <div className="flex-1">
-        <div className="h-4 bg-gray-300 rounded w-24 mb-3 animate-pulse"></div>
-        <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-24 mb-3 animate-pulse"></div>
+        <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-16 animate-pulse"></div>
       </div>
-      <div className="w-12 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg animate-pulse"></div>
     </div>
   </Card>
 );
@@ -64,13 +64,13 @@ export default function UserDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950">
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
-              <div className="h-8 bg-gray-300 rounded w-64 mb-2 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
+              <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-64 mb-2 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-48 animate-pulse"></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -79,7 +79,7 @@ export default function UserDashboard() {
               ))}
             </div>
 
-            <div className="h-96 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
           </div>
         </main>
       </div>
@@ -87,47 +87,47 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-950">
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Welcome, {user?.firstName} {user?.lastName}!</h1>
-            <p className="text-gray-600 mt-2">{user?.email}</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome, {user?.firstName} {user?.lastName}!</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">{user?.email}</p>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="p-6">
+            <Card className="p-6 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Total Orders</p>
-                  <p className="text-3xl font-bold mt-2">{orders?.length ?? 0}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Total Orders</p>
+                  <p className="text-3xl font-bold mt-2 dark:text-gray-100">{orders?.length ?? 0}</p>
                 </div>
-                <ShoppingBag className="w-12 h-12 text-blue-500 opacity-50" />
+                <ShoppingBag className="w-12 h-12 text-blue-500 dark:text-blue-400 opacity-50" />
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Wishlist Items</p>
-                  <p className="text-3xl font-bold mt-2">{wishlistItems?.length ?? 0}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Wishlist Items</p>
+                  <p className="text-3xl font-bold mt-2 dark:text-gray-100">{wishlistItems?.length ?? 0}</p>
                 </div>
-                <Heart className="w-12 h-12 text-red-500 opacity-50" />
+                <Heart className="w-12 h-12 text-red-500 dark:text-red-400 opacity-50" />
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm">Account Status</p>
-                  <p className="text-3xl font-bold mt-2 text-green-600">Active</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Account Status</p>
+                  <p className="text-3xl font-bold mt-2 text-green-600 dark:text-green-400">Active</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <div className="w-3 h-3 bg-green-600 rounded-full"></div>
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <div className="w-3 h-3 bg-green-600 dark:bg-green-400 rounded-full"></div>
                 </div>
               </div>
             </Card>
@@ -136,9 +136,9 @@ export default function UserDashboard() {
           {/* Recent Orders */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Recent Orders</h2>
+              <h2 className="text-2xl font-bold dark:text-gray-100">Recent Orders</h2>
               {orders && orders.length > 5 && (
-                <button 
+                <button
                   onClick={() => navigate('/dashboard')}
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
@@ -149,23 +149,22 @@ export default function UserDashboard() {
             {recentOrders && recentOrders.length > 0 ? (
               <div className="space-y-4">
                 {recentOrders.map((order: any) => (
-                  <Card key={order.id} className="p-6">
+                  <Card key={order.id} className="p-6 dark:border-slate-700">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold text-lg">Order #{order.id?.slice(0, 8)}</p>
-                        <p className="text-gray-600 text-sm">
+                        <p className="font-semibold text-lg dark:text-gray-100">Order #{order.id?.slice(0, 8)}</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-lg">${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</p>
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                          order.status === 'DELIVERED'
-                            ? 'bg-green-100 text-green-800'
+                        <p className="font-bold text-lg dark:text-gray-100">${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</p>
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${order.status === 'DELIVERED'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
                             : order.status === 'CANCELLED'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
+                          }`}>
                           {order.status}
                         </span>
                       </div>
@@ -174,8 +173,8 @@ export default function UserDashboard() {
                 ))}
               </div>
             ) : (
-              <Card className="p-6">
-                <p className="text-gray-600 text-center">No orders yet. Start shopping!</p>
+              <Card className="p-6 dark:border-slate-700">
+                <p className="text-gray-600 dark:text-gray-400 text-center">No orders yet. Start shopping!</p>
                 <Button className="w-full mt-4" onClick={() => navigate('/products')}>
                   Browse Products
                 </Button>
