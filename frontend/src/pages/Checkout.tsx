@@ -48,7 +48,7 @@ const Checkout = () => {
     const [errors, setErrors] = useState<Partial<ShippingAddress>>({});
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-    const shippingCost = 50; // ₹50 shipping
+    const shippingCost = 5; // ₹5 shipping
     const finalTotal = totalPrice + shippingCost; // Remove tax for simplicity
 
     useEffect(() => {
