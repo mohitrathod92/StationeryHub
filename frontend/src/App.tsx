@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useAppSelector } from "@/hooks/useRedux";
+import { useAppSelector, useAppDispatch } from "@/hooks/useRedux";
+import { getProfile } from "@/redux/slices/authSlice";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import Categories from "./pages/Categories";
@@ -22,6 +24,20 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import Wishlist from "./pages/Wishlist";
 
 const queryClient = new QueryClient();
+
+// Fetches user profile when we have a token but user is not loaded (e.g. after page refresh)
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated && !user && localStorage.getItem('accessToken')) {
+      dispatch(getProfile() as any);
+    }
+  }, [dispatch, isAuthenticated, user]);
+
+  return <>{children}</>;
+}
 
 // Protected Route Component
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: 'ADMIN' | 'USER' }) {
@@ -53,7 +69,8 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <Routes>
+              <AuthInitializer>
+                <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/categories" element={<Categories />} />
@@ -114,7 +131,8 @@ const App = () => (
                 />
 
                 <Route path="*" element={<NotFound />} />
-              </Routes>
+                </Routes>
+              </AuthInitializer>
             </BrowserRouter>
           </TooltipProvider>
         </CartProvider>

@@ -32,19 +32,23 @@ export default function UserDashboard() {
   const { items: wishlistItems, loading: wishlistLoading } = useAppSelector((state) => state.wishlist);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
+    // Fetch profile if user is not loaded (e.g. page refresh)
+    if (isAuthenticated && !user) {
+      dispatch(getProfile() as any);
     }
+  }, [dispatch, isAuthenticated, user]);
 
-    // Only fetch if we don't have data
-    if (!orders || orders.length === 0) {
-      dispatch(fetchUserOrders() as any);
+  useEffect(() => {
+    // Fetch data when authenticated
+    if (isAuthenticated) {
+      if (!orders || orders.length === 0) {
+        dispatch(fetchUserOrders() as any);
+      }
+      if (!wishlistItems || wishlistItems.length === 0) {
+        dispatch(fetchWishlist() as any);
+      }
     }
-    if (!wishlistItems || wishlistItems.length === 0) {
-      dispatch(fetchWishlist() as any);
-    }
-  }, [dispatch, navigate, isAuthenticated, user?.id]);
+  }, [dispatch, isAuthenticated, user?.id]);
 
   // Memoize recent orders
   const recentOrders = useMemo(() => {

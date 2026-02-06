@@ -145,7 +145,7 @@ const authSlice = createSlice({
       })
       .addCase(getProfile.rejected, (state) => {
         state.loading = false;
-        state.isAuthenticated = false;
+        // Do NOT set isAuthenticated = false - user stays logged in until they explicitly sign out
       });
 
     // Update Profile

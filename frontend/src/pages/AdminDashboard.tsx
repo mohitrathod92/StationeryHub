@@ -31,16 +31,18 @@ export default function AdminDashboard() {
   const { stats, loading } = useAppSelector((state) => state.admin);
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'ADMIN') {
-      navigate('/login');
-      return;
+    // Fetch profile if user is not loaded (e.g. page refresh)
+    if (isAuthenticated && !user) {
+      dispatch(getProfile() as any);
     }
+  }, [dispatch, isAuthenticated, user]);
 
-    // Only fetch if we don't have stats already
-    if (!stats) {
+  useEffect(() => {
+    // Fetch stats when we have user
+    if (isAuthenticated && user && !stats) {
       dispatch(fetchAdminStats() as any);
     }
-  }, [dispatch, navigate, isAuthenticated, user?.id, stats]);
+  }, [dispatch, isAuthenticated, user, stats]);
 
   const handleLogout = () => {
     dispatch(logout());

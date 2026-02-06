@@ -17,13 +17,11 @@ export default function Wishlist() {
   const { items: wishlistItems, loading } = useAppSelector((state) => state.wishlist);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
+    // ProtectedRoute handles auth - only fetch when authenticated
+    if (isAuthenticated) {
+      dispatch(fetchWishlist() as any);
     }
-
-    dispatch(fetchWishlist() as any);
-  }, [isAuthenticated, dispatch, navigate]);
+  }, [isAuthenticated, dispatch]);
 
   const handleRemoveFromWishlist = (productId: string) => {
     dispatch(removeFromWishlist(productId) as any);
@@ -33,10 +31,6 @@ export default function Wishlist() {
     dispatch(addToCart({ product, quantity: 1 }));
     navigate('/cart');
   };
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
