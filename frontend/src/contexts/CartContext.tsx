@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 
 export interface Product {
   id: string;
@@ -24,10 +24,42 @@ type CartAction =
   | { type: 'REMOVE_FROM_CART'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAR_CART' }
-  | { type: 'TOGGLE_CART' };
+  | { type: 'TOGGLE_CART' }
+  | { type: 'LOAD_FROM_STORAGE'; payload: CartItem[] };
+
+const CART_STORAGE_KEY = 'stationeryHub_cart';
+
+// Load cart from localStorage
+const loadCartFromStorage = (): CartItem[] => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+  } catch (error) {
+    console.error('Failed to load cart from localStorage:', error);
+  }
+  return [];
+};
+
+// Save cart to localStorage
+const saveCartToStorage = (items: CartItem[]) => {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.error('Failed to save cart to localStorage:', error);
+  }
+};
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
+    case 'LOAD_FROM_STORAGE': {
+      return {
+        ...state,
+        items: action.payload,
+      };
+    }
     case 'ADD_TO_CART': {
       const existingItem = state.items.find(item => item.id === action.payload.id);
       if (existingItem) {
@@ -85,9 +117,22 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
 
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const storedItems = loadCartFromStorage();
+    if (storedItems.length > 0) {
+      dispatch({ type: 'LOAD_FROM_STORAGE', payload: storedItems });
+    }
+  }, []);
+
+  // Save cart to localStorage whenever items change
+  useEffect(() => {
+    saveCartToStorage(state.items);
+  }, [state.items]);
+
   const addToCart = (product: Product) => dispatch({ type: 'ADD_TO_CART', payload: product });
   const removeFromCart = (id: string) => dispatch({ type: 'REMOVE_FROM_CART', payload: id });
-  const updateQuantity = (id: string, quantity: number) => 
+  const updateQuantity = (id: string, quantity: number) =>
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
   const clearCart = () => dispatch({ type: 'CLEAR_CART' });
   const toggleCart = () => dispatch({ type: 'TOGGLE_CART' });

@@ -41,14 +41,11 @@ export default function UserDashboard() {
   useEffect(() => {
     // Fetch data when authenticated
     if (isAuthenticated) {
-      if (!orders || orders.length === 0) {
-        dispatch(fetchUserOrders() as any);
-      }
-      if (!wishlistItems || wishlistItems.length === 0) {
-        dispatch(fetchWishlist() as any);
-      }
+      // Always fetch fresh data on mount to ensure accuracy
+      dispatch(fetchUserOrders() as any);
+      dispatch(fetchWishlist() as any);
     }
-  }, [dispatch, isAuthenticated, user?.id]);
+  }, [dispatch, isAuthenticated]);
 
   // Memoize recent orders
   const recentOrders = useMemo(() => {
@@ -160,10 +157,10 @@ export default function UserDashboard() {
                       <div className="text-right">
                         <p className="font-bold text-lg dark:text-gray-100">${(order.totalPrice ?? order.total ?? 0).toFixed(2)}</p>
                         <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${order.status === 'DELIVERED'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
-                            : order.status === 'CANCELLED'
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
-                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                          : order.status === 'CANCELLED'
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
                           }`}>
                           {order.status}
                         </span>
