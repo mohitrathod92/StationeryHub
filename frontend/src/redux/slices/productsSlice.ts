@@ -13,6 +13,18 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+export const fetchAdminProducts = createAsyncThunk(
+  'products/fetchAdminProducts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/admin/products');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch admin products');
+    }
+  }
+);
+
 export const fetchProductById = createAsyncThunk(
   'products/fetchProductById',
   async (id, { rejectWithValue }) => {
@@ -54,7 +66,7 @@ export const deleteProduct = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await api.delete(`/products/${id}`);
-      return { id, ...response.data };
+      return response.data.data || response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to delete product');
     }
@@ -87,6 +99,18 @@ const productsSlice = createSlice({
         state.items = action.payload.data || action.payload;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchAdminProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAdminProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.data || action.payload;
+      })
+      .addCase(fetchAdminProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

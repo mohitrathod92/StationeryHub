@@ -1,6 +1,6 @@
 import express from 'express';
 import { registerUser, loginUser, refreshToken, getCurrentUser, updateUserProfile, changePassword } from '../controllers/authController.js';
-import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getProductsByCategory } from '../controllers/productController.js';
+import { getAllProducts, getAllProductsAdmin, getProductById, createProduct, updateProduct, deleteProduct, getProductsByCategory } from '../controllers/productController.js';
 import { createOrder, getUserOrders, getOrderDetails, getAllOrders, updateOrderStatus, cancelOrder } from '../controllers/orderController.js';
 import { getWishlist, addToWishlist, removeFromWishlist, isInWishlist } from '../controllers/wishlistController.js';
 import { getAllUsers, getUserById, blockUser, unblockUser, getAdminStats, getUserDashboard } from '../controllers/userController.js';
@@ -65,6 +65,14 @@ router.put(
 );
 
 // ==================== PRODUCT ROUTES ====================
+// Admin endpoint - Get ALL products (including deleted)
+router.get(
+  '/admin/products',
+  authenticateToken,
+  authorizeAdmin,
+  getAllProductsAdmin
+);
+
 router.get(
   '/products',
   [

@@ -6,7 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Wishlist() {
@@ -130,8 +130,4 @@ export default function Wishlist() {
       <Footer />
     </div>
   );
-}
-
-function Package() {
-  return null;
 }

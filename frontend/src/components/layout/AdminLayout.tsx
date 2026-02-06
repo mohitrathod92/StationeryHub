@@ -31,26 +31,42 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-card border-b px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
-        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="text-foreground hover:bg-secondary"
+        >
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </Button>
       </div>
 
-      <div className="flex">
+      <div className="flex flex-1">
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-300 flex flex-col lg:h-auto
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="h-full flex flex-col">
+            {/* Logo Section */}
             <div className="p-6 border-b border-border hidden lg:block">
-              <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">SH</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
+                  <p className="text-xs text-muted-foreground">StationeryHub</p>
+                </div>
+              </div>
             </div>
-            <nav className="flex-1 p-4 space-y-2">
+
+            {/* Navigation Menu */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -59,40 +75,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     key={item.path}
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-secondary text-foreground'
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-foreground hover:bg-secondary/80 hover:translate-x-1'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-5 h-5 flex-shrink-0" />
                     <span className="font-medium">{item.label}</span>
                   </Link>
                 );
               })}
             </nav>
-            <div className="p-4 border-t border-border space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-foreground"
-                onClick={toggleTheme}
-              >
-                {theme === 'light' ? <Moon className="w-5 h-5 mr-3" /> : <Sun className="w-5 h-5 mr-3" />}
-                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-foreground"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-5 h-5 mr-3" />
-                Logout
-              </Button>
-            </div>
           </div>
         </aside>
 
-        {/* Overlay */}
+        {/* Mobile Overlay */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -101,8 +99,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8">
-          {children}
+        <main className="flex-1 overflow-y-auto bg-background w-full">
+          <div className="p-6 lg:p-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>

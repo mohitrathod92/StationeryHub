@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import api from '../../services/api';
 
 export interface OrderItem {
   id: string;
@@ -39,10 +37,7 @@ export const fetchUserOrders = createAsyncThunk(
   'order/fetchUserOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`${API_BASE_URL}/orders/user`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/orders/user');
       return response.data.data || [];
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -55,10 +50,7 @@ export const createOrder = createAsyncThunk(
   'order/createOrder',
   async (orderData: any, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post('/orders', orderData);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to create order');
@@ -71,10 +63,7 @@ export const getOrderDetails = createAsyncThunk(
   'order/getOrderDetails',
   async (orderId: string, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(`/orders/${orderId}`);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch order details');
@@ -87,10 +76,7 @@ export const cancelOrder = createAsyncThunk(
   'order/cancelOrder',
   async (orderId: string, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await axios.put(`${API_BASE_URL}/orders/${orderId}/cancel`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.put(`/orders/${orderId}/cancel`, {});
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to cancel order');

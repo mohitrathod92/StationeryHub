@@ -1,7 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { AppError, asyncHandler } from '../utils/errors.js';
 
-// Get All Products
+// Get All Products (User/Public - only active)
 export const getAllProducts = asyncHandler(async (req, res) => {
   const { category, skip = 0, take = 10, search } = req.query;
 
@@ -15,6 +15,31 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     where,
     skip: parseInt(skip),
     take: parseInt(take),
+  });
+
+  const total = await prisma.product.count({ where });
+
+  res.status(200).json({
+    success: true,
+    data: products,
+    pagination: { total, skip: parseInt(skip), take: parseInt(take) },
+  });
+});
+
+// Get All Products for Admin (including deleted ones)
+export const getAllProductsAdmin = asyncHandler(async (req, res) => {
+  const { skip = 0, take = 10, search } = req.query;
+
+  const where = {};
+  if (search) {
+    where.OR = [{ name: { contains: search } }, { description: { contains: search } }];
+  }
+
+  const products = await prisma.product.findMany({
+    where,
+    skip: parseInt(skip),
+    take: parseInt(take),
+    orderBy: { createdAt: 'desc' },
   });
 
   const total = await prisma.product.count({ where });
@@ -87,16 +112,37 @@ export const updateProduct = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Product updated', data: product });
 });
 
-// Delete Product (Admin Only)
+// Delete Product (Admin Only) - Hard Delete
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  await prisma.product.update({
-    where: { id },
-    data: { isActive: false },
-  });
+  // Check if product exists
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) {
+    throw new AppError('Product not found', 404);
+  }
 
-  res.status(200).json({ success: true, message: 'Product deleted' });
+  try {
+    // Delete the product - Prisma will cascade delete related records
+    // (OrderItems, Reviews, Wishlist items due to onDelete: Cascade)
+    const deletedProduct = await prisma.product.delete({ 
+      where: { id },
+      include: { 
+        orderItems: true,
+        reviews: true,
+        wishlistItems: true 
+      }
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Product deleted permanently from database', 
+      data: product 
+    });
+  } catch (error) {
+    console.error('Delete error:', error);
+    throw new AppError('Failed to delete product: ' + error.message, 500);
+  }
 });
 
 // Get Products by Category

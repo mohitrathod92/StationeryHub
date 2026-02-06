@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/hooks/useRedux';
+import { logout } from '@/redux/slices/authSlice';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingBag, Package, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, Package, Truck, CheckCircle, XCircle, MapPin, CreditCard, Calendar, ArrowLeft, LogOut, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/services/api';
+import AdminLayout from '@/components/layout/AdminLayout';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AdminOrders() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { theme, toggleTheme } = useTheme();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -45,51 +54,201 @@ export default function AdminOrders() {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Orders Management</h1>
-        <p className="text-muted-foreground">Manage all customer orders</p>
-      </div>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'SHIPPED': return 'bg-blue-100 text-blue-800';
+      case 'DELIVERED': return 'bg-green-100 text-green-800';
+      case 'CANCELLED': return 'bg-red-100 text-red-800';
+      case 'RETURNED': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-      {loading ? (
-        <div className="text-center py-12">Loading orders...</div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order: any) => (
-            <Card key={order.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    {getStatusIcon(order.status)}
-                  </div>
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+  };
+
+  const filteredOrders = filterStatus 
+    ? orders.filter((order: any) => order.status === filterStatus)
+    : orders;
+
+  return (
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleTheme}
+              className="gap-2"
+            >
+              {theme === 'light' ? (
+                <>
+                  <Moon className="w-4 h-4" />
+                  Dark
+                </>
+              ) : (
+                <>
+                  <Sun className="w-4 h-4" />
+                  Light
+                </>
+              )}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleLogout}
+              className="gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-3xl font-bold">Orders Management</h1>
+          <p className="text-muted-foreground">Manage and track all customer orders</p>
+        </div>
+
+        {/* Filter Section */}
+        <Card className="p-4 bg-gradient-to-r from-slate-50 to-slate-100">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+            <Select value={filterStatus || "ALL"} onValueChange={(value) => setFilterStatus(value === "ALL" ? "" : value)}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Orders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Orders</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="SHIPPED">Shipped</SelectItem>
+                <SelectItem value="DELIVERED">Delivered</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="RETURNED">Returned</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-gray-600">({filteredOrders.length} orders)</span>
+          </div>
+        </Card>
+
+        {/* Orders List */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="mt-4 text-gray-600">Loading orders...</p>
+            </div>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <Card className="p-12 text-center">
+            <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Orders Found</h3>
+            <p className="text-gray-500">There are no orders to display</p>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map((order: any) => (
+              <Card key={order.id} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  {/* Left Section - Order Info */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold">Order #{order.id.slice(0, 8)}</h3>
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                        order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {order.status}
-                      </span>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        {getStatusIcon(order.status)}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg">Order #{order.id.slice(0, 8).toUpperCase()}</h3>
+                        <p className="text-xs text-gray-500">ID: {order.id}</p>
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>Customer: {order.user?.firstName} {order.user?.lastName} ({order.user?.email})</p>
-                      <p>Date: {new Date(order.createdAt).toLocaleString()}</p>
-                      <p>Items: {order.items?.length || 0}</p>
-                      <p>Payment: {order.paymentMethod}</p>
-                      <p className="font-medium text-foreground">Total: ${order.totalPrice}</p>
-                    </div>
+                  </div>
+
+                  {/* Right Section - Status Badge */}
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
                   </div>
                 </div>
-                <div className="w-48">
+
+                {/* Order Details Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
+                  {/* Customer Info */}
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1">CUSTOMER</p>
+                    <p className="font-semibold text-sm">{order.user?.firstName} {order.user?.lastName}</p>
+                    <p className="text-xs text-gray-600">{order.user?.email}</p>
+                  </div>
+
+                  {/* Date */}
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      DATE
+                    </p>
+                    <p className="font-semibold text-sm">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-600">{new Date(order.createdAt).toLocaleTimeString()}</p>
+                  </div>
+
+                  {/* Items Count */}
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                      <Package className="w-3 h-3" />
+                      ITEMS
+                    </p>
+                    <p className="font-semibold text-sm">{order.items?.length || 0} product(s)</p>
+                  </div>
+
+                  {/* Total Amount */}
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                      <CreditCard className="w-3 h-3" />
+                      TOTAL
+                    </p>
+                    <p className="font-bold text-lg text-primary">${(order.totalPrice || 0).toFixed(2)}</p>
+                  </div>
+                </div>
+
+                {/* Additional Details */}
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      SHIPPING ADDRESS
+                    </p>
+                    <p className="text-gray-700 line-clamp-2">{order.shippingAddress}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold mb-1 flex items-center gap-1">
+                      <CreditCard className="w-3 h-3" />
+                      PAYMENT METHOD
+                    </p>
+                    <p className="text-gray-700 font-medium">{order.paymentMethod}</p>
+                  </div>
+                </div>
+
+                {/* Status Update */}
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <p className="text-sm text-gray-600">Update Status:</p>
                   <Select
                     value={order.status}
                     onValueChange={(value) => updateOrderStatus(order.id, value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -101,11 +260,11 @@ export default function AdminOrders() {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </AdminLayout>
   );
 }
