@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { createOrder } from '@/redux/slices/orderSlice';
 import { toast } from 'sonner';
+import { createRazorpayOrder, verifyPayment } from '@/services/paymentApi';
 
 interface ShippingAddress {
     fullName: string;
@@ -45,16 +46,29 @@ const Checkout = () => {
 
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
     const [errors, setErrors] = useState<Partial<ShippingAddress>>({});
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-    const shippingCost = 4.99;
-    const tax = totalPrice * 0.1; // 10% tax
-    const finalTotal = totalPrice + shippingCost + tax;
+    const shippingCost = 50; // ₹50 shipping
+    const finalTotal = totalPrice + shippingCost; // Remove tax for simplicity
 
     useEffect(() => {
         if (items.length === 0) {
             navigate('/cart');
         }
+        // Load Razorpay script
+        loadRazorpayScript();
     }, [items, navigate]);
+
+    // Load Razorpay checkout script
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
 
     const validateForm = (): boolean => {
         const newErrors: Partial<ShippingAddress> = {};
@@ -110,6 +124,17 @@ const Checkout = () => {
             return;
         }
 
+        // If payment method is COD, proceed with direct order placement
+        if (paymentMethod === 'COD') {
+            await handleCODOrder();
+        } else {
+            // For CARD and UPI, use Razorpay
+            await handleRazorpayPayment();
+        }
+    };
+
+    // Handle Cash on Delivery order
+    const handleCODOrder = async () => {
         const orderData = {
             items: items.map(item => ({
                 productId: item.id,
@@ -117,7 +142,7 @@ const Checkout = () => {
                 price: item.price
             })),
             shippingAddress,
-            paymentMethod,
+            paymentMethod: 'COD',
             totalAmount: finalTotal
         };
 
@@ -134,6 +159,110 @@ const Checkout = () => {
         } catch (error) {
             console.error('Order error:', error);
             toast.error('An error occurred while placing your order');
+        }
+    };
+
+    // Handle Razorpay payment
+    const handleRazorpayPayment = async () => {
+        try {
+            setIsProcessingPayment(true);
+
+            // Create Razorpay order on backend
+            const response = await createRazorpayOrder({
+                amount: finalTotal,
+                currency: 'INR',
+                receipt: `order_${Date.now()}`,
+                notes: {
+                    customerName: shippingAddress.fullName,
+                    email: shippingAddress.email,
+                }
+            });
+
+            const { order, key } = response;
+
+            // Configure Razorpay checkout options
+            const options = {
+                key: key,
+                amount: order.amount,
+                currency: order.currency,
+                name: import.meta.env.VITE_APP_NAME || 'Stationery Haven',
+                description: 'Order Payment',
+                order_id: order.id,
+                handler: async (razorpayResponse: any) => {
+                    await handlePaymentSuccess(razorpayResponse, order.id);
+                },
+                prefill: {
+                    name: shippingAddress.fullName,
+                    email: shippingAddress.email,
+                    contact: shippingAddress.phone,
+                },
+                theme: {
+                    color: '#3b82f6',
+                },
+                modal: {
+                    ondismiss: () => {
+                        setIsProcessingPayment(false);
+                        toast.error('Payment cancelled');
+                    },
+                },
+            };
+
+            // Open Razorpay checkout
+            const razorpay = new (window as any).Razorpay(options);
+            razorpay.open();
+
+            setIsProcessingPayment(false);
+        } catch (error: any) {
+            setIsProcessingPayment(false);
+            console.error('Payment error:', error);
+            toast.error(error.message || 'Failed to initiate payment');
+        }
+    };
+
+    // Handle payment success
+    const handlePaymentSuccess = async (razorpayResponse: any, orderId: string) => {
+        try {
+            setIsProcessingPayment(true);
+
+            // Verify payment on backend
+            const verificationResult = await verifyPayment({
+                razorpay_order_id: razorpayResponse.razorpay_order_id,
+                razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                razorpay_signature: razorpayResponse.razorpay_signature,
+            });
+
+            if (verificationResult.success) {
+                // Create order in database after successful payment
+                const orderData = {
+                    items: items.map(item => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    shippingAddress,
+                    paymentMethod,
+                    totalAmount: finalTotal,
+                    paymentId: razorpayResponse.razorpay_payment_id,
+                    razorpayOrderId: razorpayResponse.razorpay_order_id,
+                };
+
+                const result = await dispatch(createOrder(orderData) as any);
+
+                if (result.type === 'order/createOrder/fulfilled') {
+                    toast.success('Payment successful! Order placed.');
+                    clearCart();
+                    navigate('/dashboard');
+                } else {
+                    toast.error('Payment successful but order creation failed. Please contact support.');
+                }
+            } else {
+                toast.error('Payment verification failed');
+            }
+        } catch (error: any) {
+            console.error('Payment verification error:', error);
+            toast.error(error.message || 'Payment verification failed');
+        } finally {
+            setIsProcessingPayment(false);
         }
     };
 
@@ -187,8 +316,8 @@ const Checkout = () => {
                                             value={shippingAddress.fullName}
                                             onChange={(e) => handleInputChange('fullName', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.fullName
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="John Doe"
                                         />
@@ -208,8 +337,8 @@ const Checkout = () => {
                                             value={shippingAddress.phone}
                                             onChange={(e) => handleInputChange('phone', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.phone
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="+1 (555) 123-4567"
                                         />
@@ -229,8 +358,8 @@ const Checkout = () => {
                                             value={shippingAddress.email}
                                             onChange={(e) => handleInputChange('email', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.email
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="john@example.com"
                                         />
@@ -250,8 +379,8 @@ const Checkout = () => {
                                             value={shippingAddress.addressLine1}
                                             onChange={(e) => handleInputChange('addressLine1', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.addressLine1
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="123 Main Street"
                                         />
@@ -284,8 +413,8 @@ const Checkout = () => {
                                             value={shippingAddress.city}
                                             onChange={(e) => handleInputChange('city', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.city
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="New York"
                                         />
@@ -304,8 +433,8 @@ const Checkout = () => {
                                             value={shippingAddress.state}
                                             onChange={(e) => handleInputChange('state', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.state
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="NY"
                                         />
@@ -324,8 +453,8 @@ const Checkout = () => {
                                             value={shippingAddress.zipCode}
                                             onChange={(e) => handleInputChange('zipCode', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.zipCode
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                             placeholder="10001"
                                         />
@@ -343,8 +472,8 @@ const Checkout = () => {
                                             value={shippingAddress.country}
                                             onChange={(e) => handleInputChange('country', e.target.value)}
                                             className={`w-full px-4 py-2.5 rounded-lg border ${errors.country
-                                                    ? 'border-red-500 focus:ring-red-500'
-                                                    : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
                                         >
                                             <option value="USA">United States</option>
@@ -376,15 +505,15 @@ const Checkout = () => {
                                     <button
                                         onClick={() => setPaymentMethod('COD')}
                                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${paymentMethod === 'COD'
-                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'COD'
-                                                        ? 'border-blue-500'
-                                                        : 'border-gray-300 dark:border-slate-600'
+                                                    ? 'border-blue-500'
+                                                    : 'border-gray-300 dark:border-slate-600'
                                                     }`}>
                                                     {paymentMethod === 'COD' && (
                                                         <div className="w-3 h-3 rounded-full bg-blue-500" />
@@ -407,14 +536,14 @@ const Checkout = () => {
                                     <button
                                         onClick={() => setPaymentMethod('CARD')}
                                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${paymentMethod === 'CARD'
-                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'CARD'
-                                                    ? 'border-blue-500'
-                                                    : 'border-gray-300 dark:border-slate-600'
+                                                ? 'border-blue-500'
+                                                : 'border-gray-300 dark:border-slate-600'
                                                 }`}>
                                                 {paymentMethod === 'CARD' && (
                                                     <div className="w-3 h-3 rounded-full bg-blue-500" />
@@ -435,14 +564,14 @@ const Checkout = () => {
                                     <button
                                         onClick={() => setPaymentMethod('UPI')}
                                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${paymentMethod === 'UPI'
-                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'UPI'
-                                                    ? 'border-blue-500'
-                                                    : 'border-gray-300 dark:border-slate-600'
+                                                ? 'border-blue-500'
+                                                : 'border-gray-300 dark:border-slate-600'
                                                 }`}>
                                                 {paymentMethod === 'UPI' && (
                                                     <div className="w-3 h-3 rounded-full bg-blue-500" />
@@ -492,7 +621,7 @@ const Checkout = () => {
                                                 </p>
                                             </div>
                                             <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                                ${(item.price * item.quantity).toFixed(2)}
+                                                ₹{(item.price * item.quantity).toFixed(2)}
                                             </p>
                                         </div>
                                     ))}
@@ -502,37 +631,33 @@ const Checkout = () => {
                                 <div className="space-y-3 pt-6 border-t dark:border-slate-700">
                                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                         <span>Subtotal</span>
-                                        <span>${totalPrice.toFixed(2)}</span>
+                                        <span>₹{totalPrice.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                         <span>Shipping</span>
-                                        <span>${shippingCost.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                                        <span>Tax (10%)</span>
-                                        <span>${tax.toFixed(2)}</span>
+                                        <span>₹{shippingCost.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-gray-100 pt-3 border-t dark:border-slate-700">
                                         <span>Total</span>
-                                        <span>${finalTotal.toFixed(2)}</span>
+                                        <span>₹{finalTotal.toFixed(2)}</span>
                                     </div>
                                 </div>
 
                                 {/* Place Order Button */}
                                 <Button
                                     onClick={handlePlaceOrder}
-                                    disabled={orderLoading}
+                                    disabled={orderLoading || isProcessingPayment}
                                     className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                                 >
-                                    {orderLoading ? (
+                                    {orderLoading || isProcessingPayment ? (
                                         <div className="flex items-center gap-2">
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Processing...
+                                            {isProcessingPayment ? 'Processing Payment...' : 'Processing...'}
                                         </div>
                                     ) : (
                                         <>
                                             <CheckCircle className="h-5 w-5 mr-2" />
-                                            Place Order
+                                            {paymentMethod === 'COD' ? 'Place Order' : 'Proceed to Payment'}
                                         </>
                                     )}
                                 </Button>
