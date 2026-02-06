@@ -11,7 +11,9 @@ import { addToCart, removeFromCart, clearCart } from '../redux/slices/cartSlice'
 // ============================================================================
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector: typeof useSelector = useSelector;
+export const useAppSelector = <TSelected = unknown>(
+  selector: (state: RootState) => TSelected
+): TSelected => useSelector(selector);
 
 // ============================================================================
 // PRODUCTS HOOKS

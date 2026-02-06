@@ -11,6 +11,7 @@ import { useAppSelector, useAppDispatch } from "@/hooks/useRedux";
 import { getProfile } from "@/redux/slices/authSlice";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import Categories from "./pages/Categories";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
@@ -71,66 +72,67 @@ const App = () => (
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <AuthInitializer>
                 <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                
-                {/* Protected User Routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute requiredRole="USER">
-                      <UserDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/wishlist"
-                  element={
-                    <ProtectedRoute requiredRole="USER">
-                      <Wishlist />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
 
-                {/* Protected Admin Routes */}
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute requiredRole="ADMIN">
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products"
-                  element={
-                    <ProtectedRoute requiredRole="ADMIN">
-                      <AdminProducts />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <ProtectedRoute requiredRole="ADMIN">
-                      <AdminUsers />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/orders"
-                  element={
-                    <ProtectedRoute requiredRole="ADMIN">
-                      <AdminOrders />
-                    </ProtectedRoute>
-                  }
-                />
+                  {/* Protected User Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute requiredRole="USER">
+                        <UserDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/wishlist"
+                    element={
+                      <ProtectedRoute requiredRole="USER">
+                        <Wishlist />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                <Route path="*" element={<NotFound />} />
+                  {/* Protected Admin Routes */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute requiredRole="ADMIN">
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/products"
+                    element={
+                      <ProtectedRoute requiredRole="ADMIN">
+                        <AdminProducts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <ProtectedRoute requiredRole="ADMIN">
+                        <AdminUsers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/orders"
+                    element={
+                      <ProtectedRoute requiredRole="ADMIN">
+                        <AdminOrders />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </AuthInitializer>
             </BrowserRouter>

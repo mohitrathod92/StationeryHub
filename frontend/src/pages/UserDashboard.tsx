@@ -31,6 +31,18 @@ export default function UserDashboard() {
   const { orders, loading: ordersLoading } = useAppSelector((state) => state.order);
   const { items: wishlistItems, loading: wishlistLoading } = useAppSelector((state) => state.wishlist);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Dashboard Stats Debug:', {
+      ordersCount: orders?.length ?? 0,
+      wishlistCount: wishlistItems?.length ?? 0,
+      ordersLoading,
+      wishlistLoading,
+      isAuthenticated,
+      hasUser: !!user
+    });
+  }, [orders, wishlistItems, ordersLoading, wishlistLoading, isAuthenticated, user]);
+
   useEffect(() => {
     // Fetch profile if user is not loaded (e.g. page refresh)
     if (isAuthenticated && !user) {
@@ -41,9 +53,15 @@ export default function UserDashboard() {
   useEffect(() => {
     // Fetch data when authenticated
     if (isAuthenticated) {
+      console.log('Fetching dashboard data...');
       // Always fetch fresh data on mount to ensure accuracy
-      dispatch(fetchUserOrders() as any);
-      dispatch(fetchWishlist() as any);
+      dispatch(fetchUserOrders() as any)
+        .then((result: any) => console.log('Orders fetched:', result))
+        .catch((error: any) => console.error('Orders fetch error:', error));
+
+      dispatch(fetchWishlist() as any)
+        .then((result: any) => console.log('Wishlist fetched:', result))
+        .catch((error: any) => console.error('Wishlist fetch error:', error));
     }
   }, [dispatch, isAuthenticated]);
 

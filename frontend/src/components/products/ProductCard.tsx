@@ -5,6 +5,7 @@ import { Product } from '@/contexts/CartContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: Product;
@@ -12,6 +13,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -29,14 +31,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
-  const discountedPrice = product.discount 
+  const discountedPrice = product.discount
     ? (product.price * (1 - product.discount / 100)).toFixed(2)
     : null;
 
   return (
     <div className="group bg-card rounded-xl overflow-hidden border border-border dark:border-slate-700 hover:border-primary hover:shadow-xl transition-all duration-300">
       {/* Product Image Container */}
-      <div className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 overflow-hidden">
+      <div
+        className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 overflow-hidden cursor-pointer"
+        onClick={() => navigate(`/product/${product.id}`)}
+      >
         {product.images && product.images.length > 0 && !imageError ? (
           <img
             src={product.images[0]}
@@ -49,7 +54,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <Package className="w-20 h-20 text-slate-300 dark:text-slate-500" />
           </div>
         )}
-        
+
+        {/* Image Count Badge */}
+        {product.images && product.images.length > 1 && (
+          <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+            +{product.images.length - 1} more
+          </div>
+        )}
+
         {/* Overlay on Hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
@@ -104,11 +116,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`h-3.5 w-3.5 ${
-                  i < Math.floor(product.rating || 0)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-slate-300 dark:text-slate-600'
-                }`}
+                className={`h-3.5 w-3.5 ${i < Math.floor(product.rating || 0)
+                  ? 'fill-amber-400 text-amber-400'
+                  : 'text-slate-300 dark:text-slate-600'
+                  }`}
               />
             ))}
           </div>

@@ -4,10 +4,14 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image: string; // Kept for backward compatibility
+  images?: string[]; // Array of image URLs (Prisma schema)
   category: string;
   rating: number;
   description?: string;
+  discount?: number; // Discount percentage
+  stock?: number; // Stock quantity
+  isActive?: boolean;
 }
 
 export interface CartItem extends Product {
