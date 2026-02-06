@@ -130,15 +130,6 @@ export default function AdminDashboard() {
             </Button>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-2 mb-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
 
         <div>
           <h1 className="text-3xl font-bold">Dashboard Overview</h1>
