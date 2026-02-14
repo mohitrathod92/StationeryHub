@@ -196,18 +196,18 @@ const ProductDetail = () => {
                                 {discountedPrice ? (
                                     <div className="flex items-baseline gap-3">
                                         <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                                            ${discountedPrice}
+                                            ₹{discountedPrice}
                                         </span>
                                         <span className="text-2xl line-through text-gray-400 dark:text-gray-500">
-                                            ${product.price.toFixed(2)}
+                                            ₹{product.price.toFixed(2)}
                                         </span>
                                         <span className="text-lg text-green-600 dark:text-green-400 font-semibold">
-                                            Save ${(product.price - parseFloat(discountedPrice)).toFixed(2)}
+                                            Save ₹{(product.price - parseFloat(discountedPrice)).toFixed(2)}
                                         </span>
                                     </div>
                                 ) : (
                                     <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
-                                        ${product.price.toFixed(2)}
+                                        ₹{product.price.toFixed(2)}
                                     </span>
                                 )}
                             </div>

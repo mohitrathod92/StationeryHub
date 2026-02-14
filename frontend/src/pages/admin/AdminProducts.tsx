@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/useRedux';
 import { fetchAdminProducts, createProduct, updateProduct, deleteProduct } from '@/redux/slices/productsSlice';
 import { logout } from '@/redux/slices/authSlice';
 import AdminLayout from '@/components/layout/AdminLayout';
+import ImageUpload from '@/components/admin/ImageUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,7 +25,6 @@ export default function AdminProducts() {
   const { items: products, loading } = useAppSelector((state) => state.products);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -54,7 +54,6 @@ export default function AdminProducts() {
   const resetForm = () => {
     setFormData({ name: '', description: '', price: '', stock: '', category: '', discount: '0', images: [''] });
     setEditingProduct(null);
-    setImagePreview('');
   };
 
   const handleEdit = (product: any) => {
@@ -68,19 +67,12 @@ export default function AdminProducts() {
       discount: product.discount?.toString() || '0',
       images: product.images?.length > 0 ? product.images : ['']
     });
-    setImagePreview(product.images?.[0] || '');
     setIsDialogOpen(true);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    setFormData({...formData, images: [url]});
-    setImagePreview(url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.name.trim()) {
       toast.error('Product name is required');
@@ -102,7 +94,7 @@ export default function AdminProducts() {
       toast.error('Stock must be 0 or greater');
       return;
     }
-    
+
     try {
       const productData = {
         ...formData,
@@ -119,7 +111,7 @@ export default function AdminProducts() {
         await dispatch(createProduct(productData) as any).unwrap();
         toast.success('Product created successfully');
       }
-      
+
       setIsDialogOpen(false);
       resetForm();
       dispatch(fetchAdminProducts() as any);
@@ -211,22 +203,22 @@ export default function AdminProducts() {
                 {/* Product Name */}
                 <div>
                   <Label className="font-semibold">Product Name *</Label>
-                  <Input 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Premium Leather Journal"
-                    required 
+                    required
                   />
                 </div>
 
                 {/* Description */}
                 <div>
                   <Label className="font-semibold">Description *</Label>
-                  <Textarea 
-                    value={formData.description} 
-                    onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                  <Textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Detailed product description..."
-                    required 
+                    required
                     rows={4}
                   />
                 </div>
@@ -234,26 +226,26 @@ export default function AdminProducts() {
                 {/* Price and Discount */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="font-semibold">Price ($) *</Label>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
+                    <Label className="font-semibold">Price (₹) *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
                       min="0"
-                      value={formData.price} 
-                      onChange={(e) => setFormData({...formData, price: e.target.value})} 
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       placeholder="0.00"
-                      required 
+                      required
                     />
                   </div>
                   <div>
                     <Label className="font-semibold">Discount (%)</Label>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
+                    <Input
+                      type="number"
+                      step="0.01"
                       min="0"
                       max="100"
-                      value={formData.discount} 
-                      onChange={(e) => setFormData({...formData, discount: e.target.value})} 
+                      value={formData.discount}
+                      onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
                       placeholder="0"
                     />
                   </div>
@@ -263,18 +255,18 @@ export default function AdminProducts() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="font-semibold">Stock Quantity *</Label>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       min="0"
-                      value={formData.stock} 
-                      onChange={(e) => setFormData({...formData, stock: e.target.value})} 
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                       placeholder="0"
-                      required 
+                      required
                     />
                   </div>
                   <div>
                     <Label className="font-semibold">Category *</Label>
-                    <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required>
+                    <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -287,43 +279,27 @@ export default function AdminProducts() {
                   </div>
                 </div>
 
-                {/* Image URL */}
+                {/* Product Image */}
                 <div>
-                  <Label className="font-semibold">Product Image URL</Label>
-                  <Input 
-                    value={formData.images[0]} 
-                    onChange={handleImageChange}
-                    placeholder="https://images.unsplash.com/photo-..." 
+                  <Label className="font-semibold mb-2 block">Product Image</Label>
+                  <ImageUpload
+                    value={formData.images[0] || ''}
+                    onChange={(url) => setFormData({ ...formData, images: [url] })}
+                    disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Paste a product image URL for display</p>
                 </div>
-
-                {/* Image Preview */}
-                {imagePreview && (
-                  <div className="border border-border rounded-lg p-4 bg-muted">
-                    <p className="text-sm font-semibold mb-2">Image Preview:</p>
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className="w-full h-48 object-cover rounded-md"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
 
                 {/* Submit Button */}
                 <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-blue-600 hover:bg-blue-700" 
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
                     disabled={loading}
                   >
                     {loading ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
                   </Button>
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     variant="outline"
                     onClick={() => {
                       setIsDialogOpen(false);
@@ -357,31 +333,31 @@ export default function AdminProducts() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {productList.map((product: any) => {
-              const discountedPrice = product.discount 
+              const discountedPrice = product.discount
                 ? (product.price * (1 - product.discount / 100)).toFixed(2)
                 : null;
-              
+
               return (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow dark:border-slate-700">
                   {/* Product Image */}
                   <div className="relative h-48 bg-muted overflow-hidden">
                     {product.images?.[0] ? (
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name} 
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform"
-                        onError={(e) => { 
+                        onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                        }} 
+                        }}
                       />
                     ) : null}
-                    <div 
-                      className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center" 
+                    <div
+                      className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center"
                       style={{ display: product.images?.[0] ? 'none' : 'flex' }}
                     >
                       <ImageIcon className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     </div>
-                    
+
                     {/* Stock Badge */}
                     <div className="absolute top-2 right-2">
                       {product.stock > 0 ? (
@@ -390,7 +366,7 @@ export default function AdminProducts() {
                         <Badge className="bg-red-600">Out of Stock</Badge>
                       )}
                     </div>
-                    
+
                     {/* Discount Badge */}
                     {product.discount > 0 && (
                       <div className="absolute top-2 left-2">
@@ -409,37 +385,37 @@ export default function AdminProducts() {
                         <Badge className="bg-red-600 text-white text-xs">Deleted</Badge>
                       )}
                     </div>
-                    
+
                     <h3 className="font-bold text-lg mb-1 line-clamp-2 text-foreground">{product.name}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
-                    
+
                     {/* Price */}
                     <div className="mb-4">
                       {discountedPrice ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-primary">${discountedPrice}</span>
-                          <span className="text-sm line-through text-muted-foreground">${product.price}</span>
+                          <span className="text-2xl font-bold text-primary">₹{discountedPrice}</span>
+                          <span className="text-sm line-through text-muted-foreground">₹{product.price}</span>
                         </div>
                       ) : (
-                        <span className="text-2xl font-bold text-primary">${product.price}</span>
+                        <span className="text-2xl font-bold text-primary">₹{product.price}</span>
                       )}
                     </div>
 
                     {/* Actions */}
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         className="flex-1"
                         onClick={() => handleEdit(product)}
                       >
                         <Edit className="w-4 h-4 mr-1" />
                         Edit
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
-                        onClick={() => handleDelete(product.id)} 
+                        onClick={() => handleDelete(product.id)}
                         disabled={loading}
                       >
                         <Trash2 className="w-4 h-4" />

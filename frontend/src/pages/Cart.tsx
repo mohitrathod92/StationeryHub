@@ -52,9 +52,12 @@ const Cart = () => {
                     {/* Product Image */}
                     <div className="w-24 h-24 bg-secondary rounded-lg shrink-0 overflow-hidden">
                       <img
-                        src={item.image}
+                        src={item.images?.[0] || item.image || '/placeholder-product.png'}
                         alt={item.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-product.png';
+                        }}
                       />
                     </div>
 
@@ -64,7 +67,7 @@ const Cart = () => {
                         {item.name}
                       </h3>
                       <p className="text-primary font-semibold mt-1">
-                        ${item.price.toFixed(2)}
+                        ₹{item.price.toFixed(2)}
                       </p>
 
                       {/* Quantity Controls */}
@@ -107,7 +110,7 @@ const Cart = () => {
                     {/* Item Total */}
                     <div className="text-right">
                       <p className="font-semibold text-foreground">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₹{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -124,16 +127,16 @@ const Cart = () => {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="text-foreground">${totalPrice.toFixed(2)}</span>
+                      <span className="text-foreground">₹{totalPrice.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Shipping</span>
-                      <span className="text-foreground">${shippingCost.toFixed(2)}</span>
+                      <span className="text-foreground">₹{shippingCost.toFixed(2)}</span>
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex justify-between font-semibold">
                         <span className="text-foreground">Total</span>
-                        <span className="text-foreground">${finalTotal.toFixed(2)}</span>
+                        <span className="text-foreground">₹{finalTotal.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>

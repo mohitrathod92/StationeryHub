@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './db.js';
 import apiRoutes from './src/routes/api.js';
+import uploadRoutes from './src/routes/uploadRoutes.js';
 import { AppError } from './src/utils/errors.js';
 
 // Legacy routes (can be removed once frontend is updated)
@@ -12,6 +15,10 @@ import cartRoutes from './routes/cartRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 
 dotenv.config();
+
+// Get __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +31,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Connect to MongoDB
 connectDB();
 
@@ -31,6 +41,9 @@ connectDB();
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running', timestamp: new Date() });
 });
+
+// Upload Routes
+app.use('/api/upload', uploadRoutes);
 
 // New Comprehensive API Routes
 app.use('/api', apiRoutes);

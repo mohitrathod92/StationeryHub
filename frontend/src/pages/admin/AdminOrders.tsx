@@ -11,6 +11,71 @@ import api from '@/services/api';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { useTheme } from '@/contexts/ThemeContext';
 
+// Helper function to format shipping address professionally
+const formatShippingAddress = (addressString: string) => {
+  try {
+    const address = JSON.parse(addressString);
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+        {/* Name */}
+        <div className="mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
+          <p className="text-base font-bold text-gray-900 dark:text-gray-100">
+            {address.fullName}
+          </p>
+        </div>
+
+        {/* Address Lines */}
+        <div className="space-y-2 mb-3">
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">Address:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              {address.addressLine1}
+            </span>
+          </div>
+          {address.addressLine2 && (
+            <div className="flex gap-2">
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]"></span>
+              <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {address.addressLine2}
+              </span>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">City:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{address.city}</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">State:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{address.state}</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">ZIP Code:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{address.zipCode}</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">Country:</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{address.country}</span>
+          </div>
+        </div>
+
+        {/* Contact Info */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">Phone:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">{address.phone}</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 min-w-[80px]">Email:</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{address.email}</span>
+          </div>
+        </div>
+      </div>
+    );
+  } catch {
+    return <p className="text-gray-700 dark:text-gray-300 text-sm">{addressString}</p>;
+  }
+};
+
 export default function AdminOrders() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -70,7 +135,7 @@ export default function AdminOrders() {
     navigate('/');
   };
 
-  const filteredOrders = filterStatus 
+  const filteredOrders = filterStatus
     ? orders.filter((order: any) => order.status === filterStatus)
     : orders;
 
@@ -219,25 +284,40 @@ export default function AdminOrders() {
                       <CreditCard className="w-3 h-3" />
                       TOTAL
                     </p>
-                    <p className="font-bold text-lg text-primary">${(order.totalPrice || 0).toFixed(2)}</p>
+                    <p className="font-bold text-lg text-primary">₹{(order.totalPrice || 0).toFixed(2)}</p>
                   </div>
                 </div>
 
                 {/* Additional Details */}
-                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div className="space-y-6 mb-4">
+                  {/* Shipping Address */}
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-3 flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4" />
                       SHIPPING ADDRESS
                     </p>
-                    <p className="text-gray-700 dark:text-gray-300 line-clamp-2">{order.shippingAddress}</p>
+                    {formatShippingAddress(order.shippingAddress)}
                   </div>
+
+                  {/* Payment Method */}
                   <div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-1 flex items-center gap-1">
-                      <CreditCard className="w-3 h-3" />
+                    <p className="text-xs text-gray-600 dark:text-gray-400 font-semibold mb-3 flex items-center gap-1.5">
+                      <CreditCard className="w-4 h-4" />
                       PAYMENT METHOD
                     </p>
-                    <p className="text-gray-700 dark:text-gray-300 font-medium">{order.paymentMethod}</p>
+                    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                      <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                        {order.paymentMethod === 'COD' && '💵 Cash on Delivery'}
+                        {order.paymentMethod === 'CARD' && '💳 Credit/Debit Card'}
+                        {order.paymentMethod === 'UPI' && '📱 UPI Payment'}
+                        {!['COD', 'CARD', 'UPI'].includes(order.paymentMethod) && order.paymentMethod}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {order.paymentMethod === 'COD' && 'Pay when you receive'}
+                        {order.paymentMethod === 'CARD' && 'Card payment'}
+                        {order.paymentMethod === 'UPI' && 'Instant payment'}
+                      </p>
+                    </div>
                   </div>
                 </div>
 

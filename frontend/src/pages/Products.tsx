@@ -17,9 +17,9 @@ const Products = () => {
   const { items: products, loading } = useAppSelector((state) => state.products);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
-  
+
   const selectedCategory = searchParams.get('category') || '';
 
   useEffect(() => {
@@ -61,12 +61,12 @@ const Products = () => {
 
   const handleReset = () => {
     setSearchParams({});
-    setPriceRange([0, 100]);
+    setPriceRange([0, 10000]);
     setSearchQuery('');
   };
 
   // Calculate max price from products
-  const maxPrice = Math.max(...(products.map((p: any) => p.price) || [50]), 100);
+  const maxPrice = Math.max(...(products.map((p: any) => p.price) || [1000]), 10000);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -216,7 +216,7 @@ const Products = () => {
                   <Package className="h-16 w-16 text-muted-foreground mb-4 opacity-50" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">No Products Found</h3>
                   <p className="text-muted-foreground mb-6 max-w-sm">
-                    {searchQuery ? 
+                    {searchQuery ?
                       'No products match your search. Try adjusting your filters.' :
                       'No products found matching your filters. Try clearing filters.'}
                   </p>

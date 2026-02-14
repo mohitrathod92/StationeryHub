@@ -171,7 +171,7 @@ const Checkout = () => {
             const response = await createRazorpayOrder({
                 amount: finalTotal,
                 currency: 'INR',
-                receipt: `order_${Date.now()}`,
+                receipt: `order_{Date.now()}`,
                 notes: {
                     customerName: shippingAddress.fullName,
                     email: shippingAddress.email,
@@ -315,7 +315,7 @@ const Checkout = () => {
                                             type="text"
                                             value={shippingAddress.fullName}
                                             onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.fullName
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.fullName
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -336,7 +336,7 @@ const Checkout = () => {
                                             type="tel"
                                             value={shippingAddress.phone}
                                             onChange={(e) => handleInputChange('phone', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.phone
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.phone
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -357,7 +357,7 @@ const Checkout = () => {
                                             type="email"
                                             value={shippingAddress.email}
                                             onChange={(e) => handleInputChange('email', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.email
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.email
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -378,7 +378,7 @@ const Checkout = () => {
                                             type="text"
                                             value={shippingAddress.addressLine1}
                                             onChange={(e) => handleInputChange('addressLine1', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.addressLine1
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.addressLine1
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -412,7 +412,7 @@ const Checkout = () => {
                                             type="text"
                                             value={shippingAddress.city}
                                             onChange={(e) => handleInputChange('city', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.city
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.city
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -432,7 +432,7 @@ const Checkout = () => {
                                             type="text"
                                             value={shippingAddress.state}
                                             onChange={(e) => handleInputChange('state', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.state
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.state
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -452,7 +452,7 @@ const Checkout = () => {
                                             type="text"
                                             value={shippingAddress.zipCode}
                                             onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.zipCode
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.zipCode
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -471,7 +471,7 @@ const Checkout = () => {
                                         <select
                                             value={shippingAddress.country}
                                             onChange={(e) => handleInputChange('country', e.target.value)}
-                                            className={`w-full px-4 py-2.5 rounded-lg border ${errors.country
+                                            className={`w-full px-4 py-2.5 rounded-lg border {errors.country
                                                 ? 'border-red-500 focus:ring-red-500'
                                                 : 'border-gray-300 dark:border-slate-700 focus:ring-blue-500'
                                                 } bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:outline-none transition`}
@@ -608,9 +608,12 @@ const Checkout = () => {
                                     {items.map((item) => (
                                         <div key={item.id} className="flex gap-3">
                                             <img
-                                                src={item.image}
+                                                src={item.images?.[0] || item.image || '/placeholder-product.png'}
                                                 alt={item.name}
                                                 className="w-16 h-16 rounded-lg object-cover bg-gray-100 dark:bg-slate-800"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = '/placeholder-product.png';
+                                                }}
                                             />
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">

@@ -174,7 +174,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm">Total Revenue</p>
-                  <p className="text-3xl font-bold mt-2">${(stats.totalRevenue ?? 0).toFixed(2)}</p>
+                  <p className="text-3xl font-bold mt-2">₹{(stats.totalRevenue ?? 0).toFixed(2)}</p>
                 </div>
                 <DollarSign className="w-12 h-12 text-yellow-500 opacity-50" />
               </div>
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold">Recent Orders</h3>
             {stats?.recentOrders && stats.recentOrders.length > 10 && (
-              <button 
+              <button
                 onClick={() => navigate('/admin/orders')}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
                     <span className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full">{order.status}</span>
                   </div>
                   <div className="mt-2 flex justify-between text-sm text-gray-600">
-                    <span>${(order.totalPrice ?? 0).toFixed(2)}</span>
+                    <span>₹{(order.totalPrice ?? 0).toFixed(2)}</span>
                     <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
