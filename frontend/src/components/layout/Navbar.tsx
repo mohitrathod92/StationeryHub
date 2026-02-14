@@ -67,11 +67,10 @@ const Navbar = () => {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary whitespace-nowrap ${
-                  isActive(link.href)
+                className={`text-sm font-medium transition-colors hover:text-primary whitespace-nowrap ${isActive(link.href)
                     ? 'text-primary'
                     : 'text-muted-foreground'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -119,6 +118,13 @@ const Navbar = () => {
                     <LayoutDashboard className="h-5 w-5" />
                   </Button>
                 </Link>
+                {user?.role === 'USER' && (
+                  <Link to="/orders">
+                    <Button variant="ghost" size="sm">
+                      My Orders
+                    </Button>
+                  </Link>
+                )}
                 <span className="text-sm text-muted-foreground whitespace-nowrap">Hi, {user?.firstName}</span>
                 <Button variant="ghost" size="sm" onClick={handleLogout}>
                   Logout
@@ -166,11 +172,10 @@ const Navbar = () => {
                   key={link.href}
                   to={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`text-sm font-medium py-2 ${
-                    isActive(link.href)
+                  className={`text-sm font-medium py-2 ${isActive(link.href)
                       ? 'text-primary'
                       : 'text-muted-foreground'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -184,6 +189,13 @@ const Navbar = () => {
                       Dashboard
                     </Button>
                   </Link>
+                  {user?.role === 'USER' && (
+                    <Link to="/orders" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        My Orders
+                      </Button>
+                    </Link>
+                  )}
                   <Button variant="outline" onClick={handleLogout}>
                     Logout
                   </Button>

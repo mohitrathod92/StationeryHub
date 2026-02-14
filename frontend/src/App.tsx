@@ -24,6 +24,7 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import Wishlist from "./pages/Wishlist";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,14 @@ const App = () => (
                     element={
                       <ProtectedRoute requiredRole="USER">
                         <Wishlist />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders"
+                    element={
+                      <ProtectedRoute requiredRole="USER">
+                        <Orders />
                       </ProtectedRoute>
                     }
                   />
